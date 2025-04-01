@@ -2,21 +2,23 @@ import { after } from "@vendetta/patcher";
 import { findByProps } from "@vendetta/metro";
 import { addSettings } from "@vendetta/ui/settings";
 import Settings from "./Settings";
+import { storage } from "@vendetta/plugin";
 
-// Fetch the UserStore that handles profile data
 const UserStore = findByProps("getUser", "getCurrentUser");
-
 let unpatch: (() => void) | undefined;
 
-// Function to start the plugin
 export function onLoad() {
+    console.log("[IgnoreProfileColors] Plugin loaded");
+
     unpatch = after("getUser", UserStore, ([userId], res) => {
+        console.log("[IgnoreProfileColors] Patching getUser", userId);
         if (!res) return res;
 
-        // Remove Nitro profile colors if enabled
-        if (storage.ignoreProfileColors) {
+        if (storage.ignoreProfileColors ?? true) {
+            console.log("[IgnoreProfileColors] Removing colors for", userId);
             res.accentColor = null;
             res.bannerColor = null;
+            console.log("[IgnoreProfileColors] Modified user:", res);
         }
 
         return res;
@@ -25,7 +27,7 @@ export function onLoad() {
     addSettings("Ignore Nitro Profile Colors", Settings);
 }
 
-// Function to stop the plugin
 export function onUnload() {
     unpatch?.();
+    console.log("[IgnoreProfileColors] Plugin unloaded");
 }
