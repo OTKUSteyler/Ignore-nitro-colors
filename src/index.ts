@@ -1,7 +1,7 @@
 import { after } from "@vendetta/patcher";
 import { findByProps } from "@vendetta/metro";
 import { storage } from "@vendetta/plugin";
-import Settings from "./settings";
+import Settings from "./Settings";
 
 let unpatch: (() => void) | undefined;
 
