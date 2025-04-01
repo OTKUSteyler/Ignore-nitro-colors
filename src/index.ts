@@ -1,47 +1,36 @@
-import { settings } from "@vendetta/plugin";
 import { after } from "@vendetta/patcher";
 import { findByProps } from "@vendetta/metro";
-import { forceUpdateAll } from "@vendetta/ui/updates";
-import Settings from "./Settings";
+import { storage } from "@vendetta/plugin";
+import Settings from "./settings";
 
-const UserProfileModule = findByProps("getUserProfile", "fetchProfile");
-const MemberListModule = findByProps("getMember", "getMembers");
+let unpatch: (() => void) | undefined;
 
-let unpatchProfile: (() => void) | undefined;
-let unpatchMemberList: (() => void) | undefined;
+// Find the User Profile component responsible for applying colors
+const UserProfile = findByProps("default", "UserProfileBadgeWrapper");
 
-export function onLoad() {
-    console.log("[IgnoreProfileColors] Plugin loaded!");
+export const onLoad = () => {
+    if (!UserProfile) {
+        console.error("[Ignore Nitro Colors] Failed to find UserProfile.");
+        return;
+    }
 
-    if (!settings.disableProfileColors) settings.disableProfileColors = true;
-
-    // Patch user profiles (DMs, profiles, popups)
-    unpatchProfile = after("getUserProfile", UserProfileModule, ([userId], result) => {
-        if (!settings.disableProfileColors) return;
-        if (result?.profile) {
-            result.profile.accentColor = null;
-            result.profile.bannerColor = null;
-            console.log(`[IgnoreProfileColors] Removed colors for user ${userId}`);
+    // Patch the Nitro Profile colors function
+    unpatch = after("default", UserProfile, ([props], res) => {
+        if (props?.user && res?.props?.style) {
+            res.props.style.color = "#FFFFFF"; // Override Nitro colors with white (or any default color)
         }
+        return res;
     });
 
-    // Patch server members (guild lists)
-    unpatchMemberList = after("getMember", MemberListModule, ([guildId, userId], result) => {
-        if (!settings.disableProfileColors) return;
-        if (result) {
-            result.colorString = null;
-            console.log(`[IgnoreProfileColors] Removed member color for user ${userId} in guild ${guildId}`);
-        }
-    });
+    console.log("[Ignore Nitro Colors] Plugin successfully loaded!");
+};
 
-    forceUpdateAll();
-}
+export const onUnload = () => {
+    if (unpatch) {
+        unpatch();
+    }
+    console.log("[Ignore Nitro Colors] Plugin unloaded.");
+};
 
-export function onUnload() {
-    unpatchProfile?.();
-    unpatchMemberList?.();
-    forceUpdateAll();
-    console.log("[IgnoreProfileColors] Plugin unloaded.");
-}
-
-export const settingsPanel = Settings;
+// Export settings so it can be accessed
+export { Settings as settings };
