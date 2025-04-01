@@ -1,14 +1,14 @@
-import { storage } from "@vendetta/plugin";
 import { useProxy } from "@vendetta/storage";
+import { storage } from "@vendetta/plugin";
 import { Forms } from "@vendetta/ui/components";
 
-const { FormSwitchRow } = Forms;
+const { FormSwitch } = Forms;
 
 export default function Settings() {
     useProxy(storage);
 
     return (
-        <FormSwitchRow
+        <FormSwitch
             label="Disable Nitro Profile Colors"
             value={storage.disableProfileColors ?? true}
             onValueChange={(value) => {
