@@ -1,17 +1,19 @@
 import { storage } from "@vendetta/plugin";
 import { useProxy } from "@vendetta/storage";
-import { General } from "@vendetta/ui/components";
+import { Forms } from "@vendetta/ui/components";
 
-const { FormSwitch } = General;
+const { FormSwitchRow } = Forms;
 
 export default function Settings() {
     useProxy(storage);
-    
+
     return (
-        <FormSwitch
-            label="Ignore Nitro Profile Colors"
-            value={storage.ignoreProfileColors ?? true}
-            onValueChange={(value) => (storage.ignoreProfileColors = value)}
+        <FormSwitchRow
+            label="Disable Nitro Profile Colors"
+            value={storage.disableProfileColors ?? true}
+            onValueChange={(value) => {
+                storage.disableProfileColors = value;
+            }}
         />
     );
 }
