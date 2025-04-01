@@ -1,19 +1,25 @@
-import { useProxy } from "@vendetta/storage";
+import { useState } from "react";
 import { storage } from "@vendetta/plugin";
-import { Forms } from "@vendetta/ui/components";
+import { View, Text } from "@vendetta/metro/common";
+import { Switch } from "@vendetta/ui/components";
 
-const { FormSwitch } = Forms;
-
-export default function Settings() {
-    useProxy(storage);
+const Settings = () => {
+    const [enabled, setEnabled] = useState(storage.ignoreNitroColors ?? true);
 
     return (
-        <FormSwitch
-            label="Disable Nitro Profile Colors"
-            value={storage.disableProfileColors ?? true}
-            onValueChange={(value) => {
-                storage.disableProfileColors = value;
-            }}
-        />
+        <View style={{ padding: 10 }}>
+            <Text style={{ fontSize: 16, marginBottom: 10 }}>
+                Disable Nitro Profile Colors
+            </Text>
+            <Switch
+                value={enabled}
+                onValueChange={(value) => {
+                    setEnabled(value);
+                    storage.ignoreNitroColors = value;
+                }}
+            />
+        </View>
     );
-}
+};
+
+export default Settings;
