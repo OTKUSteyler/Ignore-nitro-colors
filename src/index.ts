@@ -1,33 +1,34 @@
-import { after } from "@vendetta/patcher";
+import { before } from "@vendetta/patcher";
 import { findByProps } from "@vendetta/metro";
-import { addSettings } from "@vendetta/ui/settings";
-import Settings from "./Settings";
 import { storage } from "@vendetta/plugin";
+import Settings from "./Settings";
 
+// Find the UserStore
 const UserStore = findByProps("getUser", "getCurrentUser");
 let unpatch: (() => void) | undefined;
 
 export function onLoad() {
-    console.log("[IgnoreProfileColors] Plugin loaded");
+    console.log("[IgnoreProfileColors] Plugin loading...");
 
-    unpatch = after("getUser", UserStore, ([userId], res) => {
-        console.log("[IgnoreProfileColors] Patching getUser", userId);
-        if (!res) return res;
+    unpatch = before("getUser", UserStore, ([userId]) => {
+        console.log("[IgnoreProfileColors] Checking user", userId);
+        if (!storage.disableProfileColors) return; // Setting must be enabled
 
-        if (storage.ignoreProfileColors ?? true) {
-            console.log("[IgnoreProfileColors] Removing colors for", userId);
-            res.accentColor = null;
-            res.bannerColor = null;
-            console.log("[IgnoreProfileColors] Modified user:", res);
+        const user = UserStore.getUser(userId);
+        if (user) {
+            user.accentColor = null;
+            user.bannerColor = null;
+            console.log("[IgnoreProfileColors] Removed colors for", userId);
         }
-
-        return res;
     });
 
-    addSettings("Ignore Nitro Profile Colors", Settings);
+    console.log("[IgnoreProfileColors] Plugin loaded!");
 }
 
 export function onUnload() {
     unpatch?.();
-    console.log("[IgnoreProfileColors] Plugin unloaded");
+    console.log("[IgnoreProfileColors] Plugin unloaded.");
 }
+
+// Attach settings
+export const settings = Settings;
