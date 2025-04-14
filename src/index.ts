@@ -1,36 +1,17 @@
-import { after } from "@vendetta/patcher";
 import { findByProps } from "@vendetta/metro";
-import { storage } from "@vendetta/plugin";
-import Settings from "./Settings";
+import { before } from "@vendetta/patcher";
 
-let unpatch: (() => void) | undefined;
+const UserProfile = findByProps("UserProfile");
 
-// Find the User Profile component responsible for applying colors
-const UserProfile = findByProps("default", "UserProfileBadgeWrapper");
-
-export const onLoad = () => {
-    if (!UserProfile) {
-        console.error("[Ignore Nitro Colors] Failed to find UserProfile.");
-        return;
-    }
-
-    // Patch the Nitro Profile colors function
-    unpatch = after("default", UserProfile, ([props], res) => {
-        if (props?.user && res?.props?.style) {
-            res.props.style.color = "#FFFFFF"; // Override Nitro colors with white (or any default color)
-        }
-        return res;
+export default {
+  onLoad: () => {
+    before("render", UserProfile, (args) => {
+      if (args[0]?.user?.accentColor) {
+        args[0].user.accentColor = null;
+      }
     });
-
-    console.log("[Ignore Nitro Colors] Plugin successfully loaded!");
+  },
+  onUnload: () => {
+    // clean patches here
+  }
 };
-
-export const onUnload = () => {
-    if (unpatch) {
-        unpatch();
-    }
-    console.log("[Ignore Nitro Colors] Plugin unloaded.");
-};
-
-// Export settings so it can be accessed
-export { Settings as settings };
